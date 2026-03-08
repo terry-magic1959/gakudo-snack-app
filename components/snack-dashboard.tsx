@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ImageIcon, List, ShoppingCart, Package, BarChart2, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, ImageIcon, List, ShoppingCart, Package, BarChart2, Plus, Minus, ChevronLeft, ChevronRight, Search, AlertCircle } from "lucide-react";
 import {
   FormEvent,
   startTransition,
