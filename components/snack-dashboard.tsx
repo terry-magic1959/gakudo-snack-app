@@ -910,48 +910,58 @@ export function SnackDashboard() {
 
               {/* おやつの名前 */}
               <section>
-                <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-2">
+              {/* おやつの名前 & Web検索 */}
+              <section className="bg-white p-4 rounded-2xl border shadow-sm" style={{ borderColor: "#f3f4f6" }}>
+                <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-3">
                   <span>🍭</span> おやつの名前 <span className="text-red-500">*</span>
                 </h2>
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <input
-                      className="flex-1 px-4 py-3 rounded-xl border bg-white text-sm"
-                      style={{ borderColor: "#e5e7eb" }}
-                      value={snackForm.name}
-                      onChange={(e) => setSnackForm((p) => ({ ...p, name: e.target.value }))}
-                      placeholder="例: たべっ子どうぶつ"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void handleWebSearch()}
-                      disabled={searching || !snackForm.name}
-                      className="px-4 rounded-xl font-bold text-white text-sm shadow-sm active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-1 shrink-0 bg-blue-600"
-                      style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)", minWidth: "110px" }}
-                    >
-                      {searching ? "..." : "🔍 Web検索"}
-                    </button>
-                  </div>
+                <div className="space-y-3">
+                  <input
+                    className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    style={{ borderColor: "#e5e7eb" }}
+                    value={snackForm.name}
+                    onChange={(e) => setSnackForm((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="商品名を入力してください"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleWebSearch()}
+                    disabled={searching || !snackForm.name}
+                    className="w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
+                  >
+                    {searching ? (
+                      <>
+                        <span className="animate-spin text-lg">⏳</span>
+                        情報を調べています...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Webの最新情報からアレルギー等を自動入力
+                      </>
+                    )}
+                  </button>
                 </div>
               </section>
 
               {/* カテゴリ */}
-              <section>
-                <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-2">
+              <section className="bg-white p-4 rounded-2xl border shadow-sm" style={{ borderColor: "#f3f4f6" }}>
+                <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-3">
                   <span>📁</span> カテゴリ
                 </h2>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {snackCategoryOptions.map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setSnackForm((p) => ({ ...p, category: cat }))}
-                      className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-95"
+                      className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-xs font-bold transition-all active:scale-95"
                       style={
                         snackForm.category === cat
-                          ? { background: "white", border: "2px solid #f97316", color: "#ea580c", boxShadow: "0 1px 4px rgba(249,115,22,0.15)" }
-                          : { background: "white", border: "2px solid #f3f4f6", color: "#6b7280" }
+                          ? { background: "#FFF7ED", border: "2px solid #f97316", color: "#ea580c" }
+                          : { background: "#f9fafb", border: "1px solid #f3f4f6", color: "#6b7280" }
                       }
                     >
                       <span>{snackCategoryEmojis[cat as keyof typeof snackCategoryEmojis]}</span>
@@ -961,63 +971,65 @@ export function SnackDashboard() {
                 </div>
               </section>
 
-              {/* 日付 & 数量 */}
-              <section>
-                <div className="flex flex-col gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 flex items-center gap-1">
-                      <span>📅</span> 賞味期限 {snackForm.expirationDate === "" && <span className="text-[10px] text-red-500 font-bold">※手入力してください</span>}
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all bg-white"
-                      value={snackForm.expirationDate || ""}
-                      onChange={(e) => setSnackForm({ ...snackForm, expirationDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-2">
-                      <span>🔢</span> 数量（在庫）
-                    </h2>
-                    <div className="flex items-center">
-                      <button
-                        type="button"
-                        onClick={() => setSnackForm((p) => ({ ...p, currentStock: Math.max(0, p.currentStock - 1) }))}
-                        className="w-12 h-12 rounded-l-2xl flex items-center justify-center font-bold text-lg active:scale-95 transition-transform border border-r-0"
-                        style={{ background: "#f3f4f6", color: "#6b7280", borderColor: "#e5e7eb" }}
-                      >
-                        <Minus className="w-5 h-5" />
-                      </button>
+              {/* 日付 & 数量（完全に分ける） */}
+              <div className="grid grid-cols-1 gap-4">
+                <section className="bg-white p-4 rounded-2xl border shadow-sm" style={{ borderColor: "#f3f4f6" }}>
+                  <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 mb-3">
+                    <span>📅</span> 賞味期限 <span className="text-[10px] text-gray-400 font-normal">（手入力）</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full p-3.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50"
+                    value={snackForm.expirationDate || ""}
+                    onChange={(e) => setSnackForm({ ...snackForm, expirationDate: e.target.value })}
+                  />
+                </section>
+
+                <section className="bg-white p-4 rounded-2xl border shadow-sm" style={{ borderColor: "#f3f4f6" }}>
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-3">
+                    <span>🔢</span> 今回登録する数量
+                  </h2>
+                  <div className="flex items-center justify-between bg-gray-50 p-2 rounded-2xl border" style={{ borderColor: "#e5e7eb" }}>
+                    <button
+                      type="button"
+                      onClick={() => setSnackForm((p) => ({ ...p, currentStock: Math.max(0, p.currentStock - 1) }))}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center bg-white shadow-sm active:scale-90 transition-transform"
+                    >
+                      <Minus className="w-5 h-5 text-gray-400" />
+                    </button>
+                    <div className="flex flex-col items-center">
                       <input
                         type="number"
                         min={0}
-                        className="w-20 h-12 text-center font-bold text-lg border bg-white focus:outline-none"
-                        style={{ borderColor: "#e5e7eb" }}
+                        className="w-20 text-center font-bold text-2xl bg-transparent focus:outline-none"
                         value={snackForm.currentStock}
                         onChange={(e) => setSnackForm((p) => ({ ...p, currentStock: Math.max(0, Number(e.target.value)) }))}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setSnackForm((p) => ({ ...p, currentStock: p.currentStock + 1 }))}
-                        className="w-12 h-12 rounded-r-2xl flex items-center justify-center font-bold text-lg active:scale-95 transition-transform border border-l-0"
-                        style={{ background: "#f97316", color: "white", borderColor: "#f97316" }}
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
+                      <span className="text-[10px] text-gray-400 font-bold">個数</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setSnackForm((p) => ({ ...p, currentStock: p.currentStock + 1 }))}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform"
+                      style={{ background: "#f97316" }}
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
                   </div>
-                </div>
-              </section>
+                </section>
+              </div>
 
               {/* 登録ボタン */}
-              <button
-                type="button"
-                onClick={(e) => void handleSnackCreate(e as unknown as FormEvent)}
-                className="w-full py-3.5 rounded-2xl font-bold text-white text-sm shadow-md active:scale-[0.98] transition-transform"
-                style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
-              >
-                おやつを登録する
-              </button>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={(e) => void handleSnackCreate(e as unknown as FormEvent)}
+                  className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl active:scale-[0.98] transition-all"
+                  style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+                >
+                  この内容でおやつを登録
+                </button>
+              </div>
             </>
           )}
 
