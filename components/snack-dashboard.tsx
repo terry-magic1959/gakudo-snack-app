@@ -149,6 +149,7 @@ export function SnackDashboard() {
   const [previewImage2, setPreviewImage2] = useState<string>("");
   const [cameraTarget, setCameraTarget] = useState<"front" | "back">("front");
   const [classifying, setClassifying] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [bulkIntakeLoading, setBulkIntakeLoading] = useState(false);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -375,6 +376,52 @@ export function SnackDashboard() {
       await loadAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : "発注登録に失敗しました");
+    }
+  }
+
+  async function handleWebSearch() {
+    if (!snackForm.name) {
+      setError("商品名を入力してください");
+      return;
+    }
+
+    setSearching(true);
+    setMessage("");
+    setError("");
+    try {
+      const res = await submitJson("/api/search-snack", { query: snackForm.name });
+      if (res.info) {
+        const info = res.info;
+        setSnackForm(prev => ({
+          ...prev,
+          name: info.name || prev.name,
+          category: info.category || prev.category, // categoryがあれば
+          allergenNote: info.allergens_major ? info.allergens_major.join("、") : prev.allergenNote,
+        }));
+        
+        // 補足情報の反映（原材料やコンタミなど）
+        let memo = "";
+        if (info.ingredients) memo += `【原材料】\n${info.ingredients}\n`;
+        if (info.contamination_info) memo += `【注意】\n${info.contamination_info}\n`;
+        if (info.nutrition_total) {
+          memo += `【栄養】${info.nutrition_total.weight}g / ${info.nutrition_total.calories}kcal`;
+        }
+        
+        // allergenNoteに統合するか、別の場所に置くか検討が必要だが、
+        // 現状のSnack型にはallergenNoteがあるのでそこに追記する
+        if (memo) {
+          setSnackForm(prev => ({
+            ...prev,
+            allergenNote: (prev.allergenNote ? prev.allergenNote + "\n" : "") + memo
+          }));
+        }
+
+        setMessage("Webから情報を取得しました ✅");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "情報の取得に失敗しました");
+    } finally {
+      setSearching(false);
     }
   }
 
@@ -866,14 +913,25 @@ export function SnackDashboard() {
                 <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-700 mb-2">
                   <span>🍭</span> おやつの名前 <span className="text-red-500">*</span>
                 </h2>
-                <input
-                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm"
-                  style={{ borderColor: "#e5e7eb" }}
-                  value={snackForm.name}
-                  onChange={(e) => setSnackForm((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="例: たべっ子どうぶつ"
-                  required
-                />
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 px-4 py-3 rounded-xl border bg-white text-sm"
+                    style={{ borderColor: "#e5e7eb" }}
+                    value={snackForm.name}
+                    onChange={(e) => setSnackForm((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="例: たべっ子どうぶつ"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleWebSearch()}
+                    disabled={searching || !snackForm.name}
+                    className="px-4 rounded-xl font-bold text-white text-xs shadow-sm active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                    style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
+                  >
+                    {searching ? "..." : "🔍 Webで調べる"}
+                  </button>
+                </div>
               </section>
 
               {/* カテゴリ */}
