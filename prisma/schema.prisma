@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Snack {
+  id             String         @id @default(cuid())
+  name           String
+  category       SnackCategory
+  allergenNote   String?
+  unit           String         @default("袋")
+  packageSize    Int            @default(1)
+  minStockLevel  Int            @default(0)
+  currentStock   Int            @default(0)
+  active         Boolean        @default(true)
+  expirationDate DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  photos         SnackPhoto[]
+  servingLogs    ServingLog[]
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
+}
+
+model SnackPhoto {
+  id                String        @id @default(cuid())
+  snackId           String?
+  fileName          String
+  imageDataUrl      String
+  imageDataUrl2     String?
+  predictedName     String?
+  predictedCategory SnackCategory?
+  confidence        Float?
+  provider          String        @default("mock")
+  createdAt         DateTime      @default(now())
+  snack             Snack?        @relation(fields: [snackId], references: [id])
+}
+
+model ServingLog {
+  id            String   @id @default(cuid())
+  snackId       String
+  servings      Int
+  childrenCount Int?
+  servedDate    DateTime
+  memo          String?
+  createdAt     DateTime @default(now())
+  snack         Snack    @relation(fields: [snackId], references: [id])
+}
+
+model OrderBatch {
+  id           String      @id @default(cuid())
+  orderedDate  DateTime
+  supplierName String?
+  requestedBy  String?
+  status       OrderStatus @default(DRAFT)
+  memo         String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id          String    @id @default(cuid())
+  orderBatchId String
+  snackId     String
+  quantity    Int
+  unitPrice   Int?
+  createdAt   DateTime  @default(now())
+  orderBatch  OrderBatch @relation(fields: [orderBatchId], references: [id])
+  snack       Snack      @relation(fields: [snackId], references: [id])
+}
+
+model StockMovement {
+  id           String            @id @default(cuid())
+  snackId      String
+  movementType StockMovementType
+  quantity     Int
+  reason       String?
+  movedAt      DateTime
+  createdAt    DateTime          @default(now())
+  snack        Snack             @relation(fields: [snackId], references: [id])
+}
+
+enum SnackCategory {
+  SENBEI
+  BISCUIT
+  CHOCOLATE
+  GUMMY
+  SNACK
+  FRUIT
+  BREAD
+  ICE
+  JELLY
+  DRINK
+  OTHER
+}
+
+enum OrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUST
+}

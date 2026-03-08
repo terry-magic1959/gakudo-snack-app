@@ -1,0 +1,9 @@
+node_modules
+.next
+.env
+*.sqlite
+*.sqlite-journal
+dist
+coverage
+.vercel
+.env*.local
